@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phone Peeking Interactive Story</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --phone-bg: #000000;
+      --chat-bg: #0b141a;
+      --bubble-me: #005c4b;
+      --bubble-them: #202c33;
+      --text-color: #e9edef;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Bingkai Mockup Smartphone */
+    .phone-container {
+      width: 375px;
+      height: 750px;
+      background-color: var(--phone-bg);
+      border-radius: 45px;
+      border: 10px solid #334155;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Notch / Dynamic Island */
+    .notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 28px;
+      background-color: #000;
+      border-radius: 20px;
+      z-index: 100;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 40px;
+      padding: 12px 24px 0 24px;
+      display: flex;
+      justify-content: space-between;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 90;
+    }
+
+    /* Pop-up Notifikasi Layar Atas */
+    .notification-banner {
+      position: absolute;
+      top: -120px;
+      left: 12px;
+      right: 12px;
+      background: rgba(30, 41, 59, 0.95);
+      border-left: 4px solid #ef4444;
+      border-radius: 16px;
+      padding: 14px;
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 99;
+      cursor: pointer;
+    }
+
+    .notification-banner.active {
+      top: 45px;
+    }
+
+    .notif-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #ef4444;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .notif-title {
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+
+    .notif-body {
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.3;
+    }
+
+    /* Layout Chat App */
+    .chat-screen {
+      flex: 1;
+      background-color: var(--chat-bg);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .chat-header {
+      padding: 10px 0 15px 0;
+      border-bottom: 1px solid #1e293b;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--text-color);
+      position: relative;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeIn 0.4s forwards;
+    }
+
+    .message.them {
+      background-color: var(--bubble-them);
+      align-self: flex-start;
+      border-bottom-left-radius: 2px;
+    }
+
+    .message.me {
+      background-color: var(--bubble-me);
+      align-self: flex-end;
+      border-bottom-right-radius: 2px;
+    }
+
+    .time {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    /* Action / Input Area */
+    .chat-input-area {
+      padding: 12px;
+      background: #0f172a;
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 10px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover {
+      background-color: #1d4ed8;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsif untuk HP Asli */
+    @media (max-width: 480px) {
+      .phone-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="phone-container">
+    <div class="notch"></div>
+    
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>14:30</span>
+      <span>LTE 85%</span>
+    </div>
+
+    <!-- Push Notification Pop-up -->
+    <div class="notification-banner" id="notifBanner" onclick="openNewsDetail()">
+      <div class="notif-header">
+        <span>🔴 Breaking News</span>
+        <span>Baru Saja</span>
+      </div>
+      <div class="notif-title">Penerbangan Rute Congo Hilang Kontak</div>
+      <div class="notif-body">Pesawat komersial dikabarkan mengalami insiden 2 jam setelah lepas landas...</div>
+    </div>
+
+    <!-- Layar Chat Utama -->
+    <div class="chat-screen" id="chatScreen">
+      <div class="chat-header">Percakapan dengan Julian</div>
+      
+      <div class="message them">
+        Aku boarding dulu ya. Sampai ketemu nanti ❤️
+        <div class="time">12:00</div>
+      </div>
+      
+      <div class="message me">
+        Hati-hati di jalan! Kabari kalau sudah sampai transit ya.
+        <div class="time">12:02</div>
+      </div>
+    </div>
+
+    <!-- Area Tombol Interaksi Pembaca -->
+    <div class="chat-input-area">
+      <button class="btn-action" onclick="triggerNextScene()">Kirim Pesan susulan...</button>
+    </div>
+  </div>
+
+  <script>
+    let step = 0;
+
+    function triggerNextScene() {
+      const chatScreen = document.getElementById('chatScreen');
+
+      if (step === 0) {
+        // Tambah pesan dari karakter utama
+        const msg = document.createElement('div');
+        msg.className = 'message me';
+        msg.innerHTML = 'Sudah 2 jam lebih kok belum ada kabar? <div class="time">14:15</div>';
+        chatScreen.appendChild(msg);
+        chatScreen.scrollTop = chatScreen.scrollHeight;
+
+        // Picu notifikasi breaking news setelah jeda 2 detik
+        setTimeout(() => {
+          showNotification();
+        }, 2000);
+
+        step++;
+      }
+    }
+
+    function showNotification() {
+      const notif = document.getElementById('notifBanner');
+      notif.classList.add('active');
+
+      // Efek getar jika dibuka via HP sungguhan
+      if ("vibrate" in navigator) {
+        navigator.vibrate([200, 100, 200]);
+      }
+    }
+
+    function openNewsDetail() {
+      alert("Pembaca mengklik notifikasi berita! Anda dapat mengarahkan ke halaman/modal berita fiktif di sini.");
+    }
+  </script>
+</body>
+</html>
